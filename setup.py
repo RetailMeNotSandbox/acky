@@ -8,10 +8,14 @@ if sys.version_info <= (2, 7):
     print(error, file=sys.stderr)
     sys.exit(1)
 
+with open('README.rst') as f:
+    long_description = f.read()
+
 setup(
     name="acky",
     version=__version__,
     description="A consistent API to AWS",
+    long_description=long_description,
     author="Matthew Wedgwood",
     author_email="mw@rmn.com",
     url="http://github.com/RetailMeNot/acky",
