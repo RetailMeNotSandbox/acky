@@ -7,6 +7,8 @@ import acky.sts
 import acky.sqs
 import botocore.session
 
+__version__ = '0.0.1'
+
 
 class AWS(object):
     def __init__(self, region, profile=None):
