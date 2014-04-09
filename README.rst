@@ -41,7 +41,7 @@ instance of the AWS object::
 Module Structure
 %%%%%%%%%%%%%%%%
 
-The expected module structure for Situ follows. Many APIs are not yet
+The expected module structure for Acky follows. Many APIs are not yet
 implemented, but those that are can be considered stable.
 
 * AWS
