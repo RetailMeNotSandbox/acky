@@ -18,7 +18,12 @@ whose attributes can be set before executing the API call.
 
 # Using Acky
 
-Before using 
+Acky uses a botocore-style AWS credential configuration, the same as the
+official AWS CLI. Before you use Acky, you'll need to [set up your
+config](http://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html).
+
+Once your credentials are set up, using acky is as simple as creating an
+instance of the AWS object:
 
     from acky import AWS
     aws = AWS(region, profile)
