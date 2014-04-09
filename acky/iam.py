@@ -76,5 +76,6 @@ class KeysCollection(AwsCollection, IAMApiClient):
         # DeleteAccessKey
         if not username:
             username = self._aws.username
-        self.call('DeleteAccessKey', user_name=username, access_key_id=access_key)
+        self.call('DeleteAccessKey', user_name=username,
+                  access_key_id=access_key)
         return True

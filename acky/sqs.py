@@ -36,7 +36,8 @@ class QueuesCollection(AwsCollection, SQSApiClient):
                 if "://" in queue_name:
                     return [queue_name]
                 params["queue_name"] = queue_name
-                return [self.call("GetQueueUrl", response_data_key="QueueUrl", **params)]
+                return [self.call("GetQueueUrl", response_data_key="QueueUrl",
+                        **params)]
         return self.call("ListQueues", response_data_key="QueueUrls", **params)
 
     def get_attributes(self, queue_url):
@@ -62,7 +63,8 @@ class QueuesCollection(AwsCollection, SQSApiClient):
 
 
 class MessagesCollection(AwsCollection, SQSApiClient):
-    def get(self, queue, max_messages=10, wait_time_seconds=0, filters=None, attributes=None):
+    def get(self, queue, max_messages=10, wait_time_seconds=0, filters=None,
+            attributes=None):
         # returns [{<Message>}, ...]
         # ReceiveMessage (no native filter)
         if filters:
@@ -80,7 +82,8 @@ class MessagesCollection(AwsCollection, SQSApiClient):
             "wait_time_seconds": wait_time_seconds,
             "attribute_names": attributes,
         }
-        return self.call("ReceiveMessage", response_data_key="Messages", **params)
+        return self.call("ReceiveMessage", response_data_key="Messages",
+                         **params)
 
     def create(self, queue, message_body, verify=False):
         # returns message_id
@@ -107,5 +110,6 @@ class MessagesCollection(AwsCollection, SQSApiClient):
             if not queue_urls:
                 raise QueueNotFound(queue)
             queue = queue_urls[0]
-        self.call("DeleteMessage", queue_url=queue, receipt_handle=receipt_handle)
+        self.call("DeleteMessage", queue_url=queue,
+                  receipt_handle=receipt_handle)
         return True

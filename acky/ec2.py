@@ -17,7 +17,8 @@ class EC2(EC2ApiClient):
         # DescribeRegions
         regions = self.call("DescribeRegions", response_data_key="Regions")
         if continent and continent != "all":
-            regions = [r for r in regions if r['RegionName'].startswith("{}-".format(continent))]
+            regions = [r for r in regions
+                       if r['RegionName'].startswith("{}-".format(continent))]
         return regions
 
     def zones(self, region):
@@ -151,14 +152,15 @@ class InstanceCollection(AwsCollection, EC2ApiClient):
     def control(self, inst, state):
         # returns bool
         # valid states: start, stop, termate, protect, unprotect
-        # StartInstances, StopInstances, TerminateInstances, ModifyInstanceAttribute(DisableApiTermination)
+        # StartInstances, StopInstances, TerminateInstances,
+        #     ModifyInstanceAttribute(DisableApiTermination)
         raise NotImplementedError()
 
     def Launcher(self, config=None):
         class _launcher(object):
-            # Configurable launcher for EC2 instances. Create the Launcher (passing
-            # an optional dict of its attributes), set its attributes (as described
-            # in the RunInstances API docs), then launch()
+            # Configurable launcher for EC2 instances. Create the Launcher
+            # (passing an optional dict of its attributes), set its attributes
+            # (as described in the RunInstances API docs), then launch()
             def __init__(self, aws, config):
                 self._aws = aws
                 self.config = config
@@ -386,7 +388,8 @@ class SubnetCollection(AwsCollection, EC2ApiClient):
     def destroy(self, subnet_id):
         # returns bool
         # DeleteSubnet
-        if self.call("DeleteSubnet", SubnetId=subnet_id, response_data_key="return"):
+        if self.call("DeleteSubnet", SubnetId=subnet_id,
+                     response_data_key="return"):
             return True
         return False
 

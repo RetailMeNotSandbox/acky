@@ -25,7 +25,8 @@ class AWSErrorNotFound(Exception):
 
 def extract_aws_error(xml_string):
     def _bomb(xml_string):
-        e = AWSErrorNotFound("The string provided does not appear to be an XML AWS error response")
+        e = AWSErrorNotFound("The string provided does not appear to be an "
+                             "XML AWS error response")
         e.xml_string = xml_string
         raise e
 
@@ -35,7 +36,8 @@ def extract_aws_error(xml_string):
         _bomb(xml_string)
 
     for tag in dom.getElementsByTagName('Error'):
-        children = [n.tagName for n in tag.childNodes if n.nodeType != n.TEXT_NODE]
+        children = [n.tagName for n in tag.childNodes
+                    if n.nodeType != n.TEXT_NODE]
         if 'Code' in children and 'Message' in children:
             code = tag.getElementsByTagName('Code')[0].firstChild.data
             message = tag.getElementsByTagName('Message')[0].firstChild.data
@@ -85,7 +87,8 @@ class AwsApiClient(object):
         # returns (string, ...)
         regions = self._service.region_names
         if continent and continent != "all":
-            regions = [r for r in regions if r.startswith("{}-".format(continent))]
+            regions = [r for r in regions
+                       if r.startswith("{}-".format(continent))]
         if not include_gov:
             regions = [r for r in regions if "-gov-" not in r]
         return regions
