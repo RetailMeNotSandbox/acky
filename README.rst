@@ -93,3 +93,17 @@ implemented, but those that are can be considered stable.
     * GetSessionToken
 
 Other services will be added in future versions.
+
+%%%%%%%%%%%%%%%%%%
+Installing acky
+%%%%%%%%%%%%%%%%%%
+
+acky is available in PyPI and is installable via pip::
+
+    pip install acky
+
+You may also install acky from source, perhaps from the GitHub repo::
+
+    git clone https://github.com/RetailMeNot/acky.git
+    cd acky
+    python setup.py install
