@@ -1,8 +1,10 @@
 import unittest
-from unittest.mock import (
-    patch,
-)
-from acky import AWS
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
+
+from acky.aws import AWS
 
 
 class TestAWS(unittest.TestCase):
