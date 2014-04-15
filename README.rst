@@ -29,7 +29,7 @@ official AWS CLI. Before you use Acky, you'll need to `set up your config
 Once your credentials are set up, using acky is as simple as creating an
 instance of the AWS object::
 
-    from acky import AWS
+    from acky.aws import AWS
     aws = AWS(region, profile)
     instances = aws.ec2.Instances.get(filters={'tag:Name': 'web-*'})
     print('Found {} web servers'.format(len(instances))
