@@ -80,6 +80,10 @@ class EC2(EC2ApiClient):
     def KeyPairs(self):
         return KeyPairCollection(self._aws)
 
+    @property
+    def Tags(self):
+        return TagCollection(self._aws)
+
 
 class ACLCollection(AwsCollection, EC2ApiClient):
     def get(self, filters=None):
@@ -353,17 +357,25 @@ class SnapshotCollection(AwsCollection, EC2ApiClient):
     def get(self, filters=None):
         # returns (snap_info, ...)
         # DescribeSnapshots
-        raise NotImplementedError()
+        params = {}
+        if filters:
+            params["filters"] = make_filters(filters)
+        return self.call("DescribeSnapshots",
+                         response_data_key="Snapshots",
+                         **params)
 
-    def create(self, vol, desc=None):
+    def create(self, volume_id, description=None):
         # returns snap_info
         # CreateSnapshot
-        raise NotImplementedError()
+        return self.call("CreateSnapshot",
+                         VolumeId=volume_id,
+                         Description=description,
+                         response_data_key="Snapshot")
 
-    def destroy(self, vol):
+    def destroy(self, snapshot_id):
         # returns bool
         # DeleteSnapshot
-        raise NotImplementedError()
+        return self.call("DeleteSnapshot", SnapshotId=snapshot_id)
 
 
 class SubnetCollection(AwsCollection, EC2ApiClient):
@@ -412,3 +424,25 @@ class VPCCollection(AwsCollection, EC2ApiClient):
         # returns bool
         # DeleteVpc
         raise NotImplementedError()
+
+
+class TagCollection(AwsCollection, EC2ApiClient):
+    def get(self, filters=None):
+        # returns (tag_info, ...)
+        # DescribeTags
+        params = {}
+        if filters:
+            params["filters"] = make_filters(filters)
+        return self.call("DescribeTags",
+                         response_data_key="Tags",
+                         **params)
+
+    def create(self, resource_ids, tags):
+        # returns bool
+        # CreateTags
+        return self.call("CreateTags", resources=resource_ids, tags=tags)
+
+    def destroy(self, resource_ids, tags):
+        # returns bool
+        # DeleteTags
+        return self.call("DeleteTags", resources=resource_ids, tags=tags)

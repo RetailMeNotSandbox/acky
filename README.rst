@@ -34,7 +34,7 @@ instance of the AWS object::
     instances = aws.ec2.Instances.get(filters={'tag:Name': 'web-*'})
     print('Found {} web servers'.format(len(instances))
     for instance in instances:
-        print('  {}'.format(instance['PublicDNSAddress'])
+        print('  {}'.format(instance['PublicDnsName'])
     
 
 %%%%%%%%%%%%%%%%
