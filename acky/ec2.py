@@ -84,6 +84,10 @@ class EC2(EC2ApiClient):
     def Tags(self):
         return TagCollection(self._aws)
 
+    @property
+    def Images(self):
+        return ImageCollection(self._aws)
+
 
 class ACLCollection(AwsCollection, EC2ApiClient):
     def get(self, filters=None):
@@ -196,11 +200,14 @@ class ElasticIPCollection(AwsCollection, EC2ApiClient):
 
 
 class InstanceCollection(AwsCollection, EC2ApiClient):
-    def get(self, filters=None):
+
+    def get(self, instance_ids=None, filters=None):
         """List instance info."""
         params = {}
         if filters:
             params["filters"] = make_filters(filters)
+        if instance_ids:
+            params['InstanceIds'] = instance_ids
         reservations = self.call("DescribeInstances",
                                  response_data_key="Reservations",
                                  **params)
@@ -430,12 +437,13 @@ class VolumeCollection(AwsCollection, EC2ApiClient):
     """Interface to get, create, destroy, and attach for EBS Volumes.
     (Amazon EC2 API Version 2014-06-15)
     """
-    def get(self, filters=None):
+    def get(self, volume_ids=None, filters=None):
         """List EBS Volume info."""
         params = {}
         if filters:
             params["filters"] = make_filters(filters)
         return self.call("DescribeVolumes",
+                         VolumeIds=volume_ids,
                          response_data_key="Volumes",
                          **params)
 
@@ -498,8 +506,7 @@ class SnapshotCollection(AwsCollection, EC2ApiClient):
         # CreateSnapshot
         return self.call("CreateSnapshot",
                          VolumeId=volume_id,
-                         Description=description,
-                         response_data_key="Snapshot")
+                         Description=description)
 
     def destroy(self, snapshot_id):
         # returns bool
@@ -575,3 +582,42 @@ class TagCollection(AwsCollection, EC2ApiClient):
         # returns bool
         # DeleteTags
         return self.call("DeleteTags", resources=resource_ids, tags=tags)
+
+
+class ImageCollection(AwsCollection, EC2ApiClient):
+    def get(self, image_ids=None, owners=None, executable_users=None, filters=None):
+        # returns (image_info, ...)
+        # DescribeImages
+        params = {}
+        if filters:
+            params["filters"] = make_filters(filters)
+        if image_ids:
+            params["ImageIds"] = image_ids
+        if owners:
+            params["Owners"] = owners
+        if executable_users:
+            params["ExecutableUsers"] = executable_users
+        return self.call("DescribeImages",
+                         response_data_key="Images",
+                         **params)
+
+    def create(self, instance_id, name, no_reboot=True, description=None, block_device_mappings=None):
+        # returns image_id
+        # CreateImage
+        params = {
+            "InstanceId": instance_id,
+            "Name": name,
+            "NoReboot": no_reboot
+        }
+        if description:
+            params["Description"] = description
+        if block_device_mappings:
+            params["BlockDeviceMappings"] = block_device_mappings
+        return self.call("CreateImage",
+                         response_data_key="ImageId",
+                         **params)
+
+    def destroy(self, image_id):
+        # returns bool
+        # CreateImage
+        return self.call("DeregisterImage", ImageId=image_id)

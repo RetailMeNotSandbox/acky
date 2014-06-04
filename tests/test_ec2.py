@@ -12,7 +12,7 @@ GENERIC_SUBNET = "subnet-test"
 GENERIC_IP = "8.8.8.8"
 GENERIC_INSTANCE = "i-123"
 GENERIC_VOL = "vol-123"
-
+GENERIC_AMI_DESCRIPTION = "{0} description".format(GENERIC_AMI)
 
 class _AWS(object):
     """AWS object for mock testing with only basic features."""
@@ -334,7 +334,9 @@ class TestVolumeCollection(_TestEC2Collection, unittest.TestCase):
     commands = {'get': 'DescribeVolumes',
                 'create': 'CreateVolume',
                 'destroy': 'DeleteVolume'}
-    get_expectations = [call(commands['get'], response_data_key='Volumes')]
+    get_expectations = [
+        call(commands['get'], VolumeIds=None, response_data_key='Volumes')
+    ]
     create_args = [{'az': "us-east-1", 'size_or_snap': 8}]
     create_expectations = [call(commands['create'], encrypted=True,
                                 AvailabilityZone='us-east-1', Size=8)]
@@ -354,7 +356,6 @@ class TestSnapshotCollection(_TestEC2Collection, unittest.TestCase):
                              response_data_key='Snapshots')]
     create_args = [{'volume_id': GENERIC_VOL}]
     create_expectations = [call(commands['create'],
-                                response_data_key='Snapshot',
                                 Description=None, VolumeId='vol-123')]
     destroy_args = [{'snapshot_id': "snap-123"}]
     destroy_expectations = [call(commands['destroy'], SnapshotId='snap-123')]
@@ -406,3 +407,29 @@ class TestTagCollection(_TestEC2Collection, unittest.TestCase):
     destroy_expectations = [call(commands['destroy'], resources=["res-test"],
                                  tags=["tag-test"])]
     instance = _AWS().ec2.Tags
+
+
+class TestImageCollection(_TestEC2Collection, unittest.TestCase):
+    class_name = "Images"
+    commands = {'get': 'DescribeImages',
+                'create': 'CreateImage',
+                'destroy': 'DeregisterImage'}
+    get_expectations = [call(commands['get'], response_data_key='Images')]
+    create_args = [{
+        'instance_id': GENERIC_INSTANCE,
+        'name': GENERIC_INSTANCE,
+        'no_reboot':  True,
+        'description': GENERIC_AMI_DESCRIPTION
+    }]
+    create_expectations = [call(
+        commands['create'],
+        response_data_key='ImageId',
+        Name=GENERIC_INSTANCE,
+        Description=GENERIC_AMI_DESCRIPTION,
+        InstanceId=GENERIC_INSTANCE,
+        NoReboot=True
+    )]
+    destroy_args = [{'image_id': GENERIC_AMI}]
+    destroy_expectations = [call(commands['destroy'],
+                                 ImageId=GENERIC_AMI)]
+    instance = _AWS().ec2.Images
