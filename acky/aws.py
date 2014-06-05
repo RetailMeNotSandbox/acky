@@ -15,6 +15,7 @@ class AWS(object):
             'profile': (None, 'BOTO_DEFAULT_PROFILE', profile),
         }
         self.session = botocore.session.get_session(env_vars)
+        self.session.profile = profile
         self.region = region
 
     @property
