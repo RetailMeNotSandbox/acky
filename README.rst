@@ -32,7 +32,7 @@ instance of the AWS object::
     from acky.aws import AWS
     aws = AWS(region, profile)
     instances = aws.ec2.Instances.get(filters={'tag:Name': 'web-*'})
-    print('Found {} web servers'.format(len(instances))
+    print('Found {} web servers'.format(len(instances)))
     for instance in instances:
         print('  {}'.format(instance['PublicDnsName'])
     
