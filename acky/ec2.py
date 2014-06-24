@@ -181,7 +181,7 @@ class InstanceCollection(AwsCollection, EC2ApiClient):
 
 class KeyPairCollection(AwsCollection, EC2ApiClient):
     def get(self, filters=None):
-        """Returns a list of key info."""
+        """List key info."""
         params = {}
         if filters:
             params["filters"] = make_filters(filters)
@@ -190,11 +190,11 @@ class KeyPairCollection(AwsCollection, EC2ApiClient):
                          **params)
 
     def create(self, key_name):
-        """Returns data about the new key."""
+        """Create a new key with a given name."""
         return self.call("CreateKeyPair", KeyName=key_name)
 
     def destroy(self, key_name):
-        """Returns success as a boolean."""
+        """Delete a key."""
         return self.call("DeleteKeyPair", KeyName=key_name)
 
 
