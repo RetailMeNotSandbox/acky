@@ -181,8 +181,7 @@ class InstanceCollection(AwsCollection, EC2ApiClient):
 
 class KeyPairCollection(AwsCollection, EC2ApiClient):
     def get(self, filters=None):
-        # returns (key_info, ...)
-        # DescribeKeyPairs
+        """List key info."""
         params = {}
         if filters:
             params["filters"] = make_filters(filters)
@@ -191,14 +190,12 @@ class KeyPairCollection(AwsCollection, EC2ApiClient):
                          **params)
 
     def create(self, key_name):
-        # returns (key_pair, ...)
-        # CreateKeyPair
-        raise NotImplementedError()
+        """Create a new key with a given name."""
+        return self.call("CreateKeyPair", KeyName=key_name)
 
     def destroy(self, key_name):
-        # returns bool
-        # DeleteKeyPair
-        raise NotImplementedError()
+        """Delete a key."""
+        return self.call("DeleteKeyPair", KeyName=key_name)
 
 
 class PlacementGroupCollection(AwsCollection, EC2ApiClient):
