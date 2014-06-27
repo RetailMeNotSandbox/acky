@@ -143,8 +143,7 @@ class ElasticIPCollection(AwsCollection, EC2ApiClient):
 
 class InstanceCollection(AwsCollection, EC2ApiClient):
     def get(self, filters=None):
-        # returns (inst_info, ...)
-        # DescribeInstances
+        """List instance info."""
         params = {}
         if filters:
             params["filters"] = make_filters(filters)
@@ -154,25 +153,38 @@ class InstanceCollection(AwsCollection, EC2ApiClient):
         return list(chain(*(r["Instances"] for r in reservations)))
 
     def control(self, inst, state):
-        # returns bool
-        # valid states: start, stop, termate, protect, unprotect
-        # StartInstances, StopInstances, TerminateInstances,
-        #     ModifyInstanceAttribute(DisableApiTermination)
+        """Return success as a boolean.
+        Valid states: start, stop, terminate, protect, unprotect
+        (StartInstances, StopInstances, TerminateInstances,
+        ModifyInstanceAttribute(DisableApiTermination))
+        """
         raise NotImplementedError()
 
     def Launcher(self, config=None):
-        class _launcher(object):
-            # Configurable launcher for EC2 instances. Create the Launcher
-            # (passing an optional dict of its attributes), set its attributes
-            # (as described in the RunInstances API docs), then launch()
+        """Provides a configurable launcher for EC2 instances."""
+        class _launcher(EC2ApiClient):
+            """Configurable launcher for EC2 instances. Create the Launcher
+            (passing an optional dict of its attributes), set its attributes
+            (as described in the RunInstances API docs), then launch().
+            """
             def __init__(self, aws, config):
-                self._aws = aws
+                super(_launcher, self).__init__(aws)
                 self.config = config
+                self._attr = list(self.__dict__.keys()) + ['_attr']
 
-            def launch(self, count, ami, name):
-                # returns inst_info
-                # RunInstances
-                raise NotImplementedError()
+            def launch(self, ami, min_count, max_count=0):
+                """Use given AMI to launch min_count instances with the
+                current configuration. Returns instance info list.
+                """
+                params = config.copy()
+                params.update(dict([i for i in self.__dict__.items()
+                                    if i[0] not in self._attr]))
+                return self.call("RunInstances",
+                                 ImageId=ami,
+                                 MinCount=min_count,
+                                 MaxCount=max_count or min_count,
+                                 response_data_key="Instances",
+                                 **params)
 
         if not config:
             config = {}
