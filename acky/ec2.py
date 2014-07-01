@@ -125,20 +125,74 @@ class ACECollection(AwsCollection, EC2ApiClient):
 
 
 class ElasticIPCollection(AwsCollection, EC2ApiClient):
+    """Interface to get, create, destroy, associate, and disassociate EIPs for
+    classic EC2 domains and VPCs. (Amazon EC2 API Version 2014-06-15)
+    """
     def get(self, filters=None):
-        # returns (eip_info, ...)
-        # DescribeAddresses
-        raise NotImplementedError()
+        """List EIPs and associated information."""
+        params = {}
+        if filters:
+            params["filters"] = make_filters(filters)
+        return self.call("DescribeAddresses",
+                         response_data_key="Addresses",
+                         **params)
 
     def create(self, vpc=False):
-        # returns eip_info
-        # AllocateAddresses
-        raise NotImplementedError()
+        """Set vpc=True to allocate an EIP for a EC2-Classic instance.
+        Set vpc=False to allocate an EIP for a VPC instance.
+        """
+        return self.call("AllocateAddress",
+                         Domain="vpc" if vpc else "standard")
 
-    def destroy(self, eip):
-        # returns bool
-        # ReleaseAddresses
-        raise NotImplementedError()
+    def destroy(self, eip_or_aid, disassociate=False):
+        """Release an EIP. If the EIP was allocated for a VPC instance, an
+        AllocationId(aid) must be provided instead of a PublicIp. Setting
+        disassociate to True will attempt to disassociate the IP before
+        releasing it (required for associated nondefault VPC instances).
+        """
+        if "." in eip_or_aid:               # If an IP is given (Classic)
+            # NOTE: EIPs are automatically disassociated for Classic instances.
+            return "true" == self.call("ReleaseAddress",
+                                       response_data_key="return",
+                                       PublicIp=eip_or_aid)
+        else:                               # If an AID is given (VPC)
+            if disassociate:
+                self.disassociate(eip_or_aid)
+            return "true" == self.call("ReleaseAddress",
+                                       response_data_key="return",
+                                       AllocationId=eip_or_aid)
+
+    def associate(self, eip_or_aid,
+                  instance_id='', network_interface_id='', private_ip=''):
+        """Associate an EIP with a given instance or network interface. If
+        the EIP was allocated for a VPC instance, an AllocationId(aid) must
+        be provided instead of a PublicIp.
+        """
+        if "." in eip_or_aid:               # If an IP is given (Classic)
+            return self.call("AssociateAddress",
+                             PublicIp=eip_or_aid,
+                             InstanceId=instance_id,
+                             NetworkInterfaceId=network_interface_id,
+                             PrivateIpAddress=private_ip)
+        else:                               # If an AID is given (VPC)
+            return self.call("AssociateAddress",
+                             AllocationId=eip_or_aid,
+                             InstanceId=instance_id,
+                             NetworkInterfaceId=network_interface_id,
+                             PrivateIpAddress=private_ip)
+
+    def disassociate(self, eip_or_aid):
+        """Disassociates an EIP. If the EIP was allocated for a VPC instance,
+        an AllocationId(aid) must be provided instead of a PublicIp.
+        """
+        if "." in eip_or_aid:               # If an IP is given (Classic)
+            return "true" == self.call("DisassociateAddress",
+                                       response_data_key="return",
+                                       PublicIp=eip_or_aid)
+        else:                               # If an AID is given (VPC)
+            return "true" == self.call("DisassociateAddress",
+                                       response_data_key="return",
+                                       AllocationId=eip_or_aid)
 
 
 class InstanceCollection(AwsCollection, EC2ApiClient):
