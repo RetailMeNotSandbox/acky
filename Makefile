@@ -1,7 +1,7 @@
 PROJECT=acky
 PYTHON := /usr/bin/env python
-PYTHON_VERSION=$(shell $(PYTHON) -c 'import sys; print sys.version_info[0]')
-ACKY_VERSION=$(shell $(PYTHON) -c 'import acky; print acky.__version__')
+PYTHON_VERSION=$(shell $(PYTHON) -c 'from __future__ import print_function; import sys; print(sys.version_info[0])')
+ACKY_VERSION=$(shell $(PYTHON) -c 'from __future__ import print_function; import acky; print(acky.__version__)')
 
 default:
 	@echo "install: install the package and scripts"

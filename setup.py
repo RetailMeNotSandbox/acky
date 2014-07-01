@@ -20,7 +20,7 @@ setup(
     author_email="mw@rmn.com",
     url="http://github.com/RetailMeNot/acky",
     install_requires=[
-        "botocore >= 0.25.0",
+        "botocore >= 0.45.0",
     ],
     packages=find_packages(),
     classifiers=[
