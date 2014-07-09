@@ -394,26 +394,59 @@ class IpPermissionsCollection(AwsCollection, EC2ApiClient):
 
 
 class VolumeCollection(AwsCollection, EC2ApiClient):
+    """Interface to get, create, destroy, and attach for EBS Volumes.
+    (Amazon EC2 API Version 2014-06-15)
+    """
     def get(self, filters=None):
-        # returns (vol_info, ...)
-        # DescribeVolumes
-        # key: Volumes
-        raise NotImplementedError()
+        """List EBS Volume info."""
+        params = {}
+        if filters:
+            params["filters"] = make_filters(filters)
+        return self.call("DescribeVolumes",
+                         response_data_key="Volumes",
+                         **params)
 
-    def create(self, az, size_or_snap, iops=None):
-        # returns vol_info
-        # CreateVolume
-        raise NotImplementedError()
+    def create(self, az, size_or_snap, volume_type=None, iops=None,
+               encrypted=True):
+        """Create an EBS Volume using an availability-zone and size_or_snap
+        parameter, encrypted by default.
+        If the volume is crated from a snapshot, (str)size_or_snap denotes
+        the snapshot id. Otherwise, (int)size_or_snap denotes the amount of
+        GiB's to allocate. iops must be set if the volume type is io1.
+        """
+        kwargs = {}
+        kwargs['encrypted'] = encrypted
+        if volume_type:
+            kwargs['VolumeType'] = volume_type
+        if iops:
+            kwargs['Iops'] = iops
+        is_snapshot_id = False
+        try:
+            size_or_snap = int(size_or_snap)
+        except ValueError:
+            is_snapshot_id = True
+        if is_snapshot_id:
+            return self.call("CreateVolume", AvailabilityZone=az,
+                             SnapshotId=size_or_snap, **kwargs)
+        return self.call("CreateVolume", AvailabilityZone=az,
+                         Size=size_or_snap, **kwargs)
 
-    def destroy(self, vol):
-        # returns bool
-        # DeleteVolume
-        raise NotImplementedError()
+    def destroy(self, volume_id):
+        """Delete a volume by volume-id and return success boolean."""
+        return 'true' == self.call("DeleteVolume", VolumeId=volume_id,
+                                   response_data_key="return")
 
-    def attach(self, vol, inst, dev=None):
-        # returns bool
-        # AttachVolume
-        raise NotImplementedError()
+    def attach(self, volume_id, instance_id, device_path):
+        """Attach a volume to an instance, exposing it with a device name."""
+        return self.call("AttachVolume",
+                         VolumeId=volume_id, InstanceId=instance_id,
+                         Device=device_path)
+
+    def detach(self, volume_id, instance_id='', device_path='', force=False):
+        """Detach a volume from an instance."""
+        return self.call("DetachVolume",
+                         VolumeId=volume_id, InstanceId=instance_id,
+                         Device=device_path, force=force)
 
 
 class SnapshotCollection(AwsCollection, EC2ApiClient):
