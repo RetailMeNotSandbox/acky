@@ -206,6 +206,14 @@ class InstanceCollection(AwsCollection, EC2ApiClient):
                                  **params)
         return list(chain(*(r["Instances"] for r in reservations)))
 
+    def create(self, ami, count, config=None):
+        """Create an instance using the launcher."""
+        return self.Launcher(config=config).launch(ami, count)
+
+    def destroy(self, instance_id):
+        """Terminate a single given instance."""
+        return self.control(instance_id, "terminate")
+
     def control(self, inst, state):
         """Return success as a boolean.
         Valid states: start, stop, terminate, protect, unprotect
