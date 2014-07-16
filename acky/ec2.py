@@ -214,13 +214,38 @@ class InstanceCollection(AwsCollection, EC2ApiClient):
         """Terminate a single given instance."""
         return self.control(instance_id, "terminate")
 
-    def control(self, inst, state):
-        """Return success as a boolean.
-        Valid states: start, stop, terminate, protect, unprotect
-        (StartInstances, StopInstances, TerminateInstances,
-        ModifyInstanceAttribute(DisableApiTermination))
+    def control(self, instances, action):
+        """Valid actions: start, stop, reboot, terminate, protect, and
+        unprotect.
         """
-        raise NotImplementedError()
+        if not isinstance(instances, list) and\
+           not isinstance(instances, tuple):
+            instances = [instances]
+        actions = {'start': {'operation': "StartInstances",
+                             'response_data_key': "StartingInstances",
+                             'InstanceIds': instances},
+                   'stop': {'operation': "StopInstances",
+                            'response_data_key': "StoppingInstances",
+                            'InstanceIds': instances},
+                   'reboot': {'operation': "RebootInstances",
+                              'response_data_key': "return",
+                              'InstanceIds': instances},
+                   'terminate': {'operation': "TerminateInstances",
+                                 'response_data_key': "TerminatingInstances",
+                                 'InstanceIds': instances},
+                   'protect': {'operation': "ModifyInstanceAttribute",
+                               'response_data_key': "return",
+                               'Attribute': 'disableApiTermination',
+                               'Value': 'true'},
+                   'unprotect': {'operation': "ModifyInstanceAttribute",
+                                 'response_data_key': "return",
+                                 'Attribute': 'disableApiTermination',
+                                 'Value': 'false'}}
+        if (action in ('protect', 'unprotect')):
+            for instance in instances:
+                self.call(InstanceId=instance, **actions[action])
+        else:
+            return self.call(**actions[action])
 
     def Launcher(self, config=None):
         """Provides a configurable launcher for EC2 instances."""
