@@ -1,0 +1,22 @@
+language: python
+python:
+  # - "2.6" Needs the format() issue to be fixed
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
+install:
+  # Build/test dependencies
+  - pip install -r requirements_dev.txt --use-mirrors
+script:
+  # Normal tests
+  - make test
+  # Build docs
+
+#notifications:
+# hipchat:
+# rooms:
+## travis encrypt api_token@room_name --add notifications.hipchat.rooms
+# - [api token]@[room name]
+# template:
+# - '%{repository}#%{build_number} (%{branch} - %{commit} : %{author}): %{message}'
