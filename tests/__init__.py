@@ -153,13 +153,11 @@ class TestAwsCollection(unittest.TestCase):
                          'destroy': ['test']}
             if 'args' in info.keys():
                 arguments.update(info['args'])
-                print arguments
             if 'get' in info:
                 kwargs = {}
                 if 'call' in info and 'get' in info['call']:
                     kwargs = {k: ANY for k in info['call']['get']}
                 try:
-                    print c, info['get'], arguments['get']
                     instance.get(*arguments['get'])
                     assert call(info['get'], **kwargs) in\
                         instance.call.mock_calls,\
