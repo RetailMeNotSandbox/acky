@@ -5,6 +5,7 @@ import acky.iam
 import acky.rds
 import acky.sts
 import acky.sqs
+import acky.s3
 import botocore.session
 
 
@@ -61,3 +62,7 @@ class AWS(object):
     @property
     def sts(self):
         return acky.sts.STS(self)
+
+    @property
+    def s3(self):
+        return acky.s3.S3(self)
