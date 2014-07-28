@@ -69,7 +69,7 @@ class MessagesCollection(AwsCollection, SQSApiClient):
         # ReceiveMessage (no native filter)
         if filters:
             raise Warning("Filters are ignored for this call")
-        if not '://' in queue:
+        if '://' not in queue:
             queue_urls = self._aws.sqs.Queues.get(queue)
             if not queue_urls:
                 raise QueueNotFound(queue)
@@ -88,7 +88,7 @@ class MessagesCollection(AwsCollection, SQSApiClient):
     def create(self, queue, message_body, verify=False):
         # returns message_id
         # SendMessage
-        if not '://' in queue:
+        if '://' not in queue:
             queue_urls = self._aws.sqs.Queues.get(queue)
             if not queue_urls:
                 raise QueueNotFound(queue)
@@ -105,7 +105,7 @@ class MessagesCollection(AwsCollection, SQSApiClient):
     def destroy(self, queue, receipt_handle):
         # returns bool
         # DeleteMessage
-        if not '://' in queue:
+        if '://' not in queue:
             queue_urls = self._aws.sqs.Queues.get(queue)
             if not queue_urls:
                 raise QueueNotFound(queue)
