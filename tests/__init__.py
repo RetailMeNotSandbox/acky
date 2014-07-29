@@ -1,10 +1,12 @@
 import unittest
 try:
-    from unittest.mock import patch
+    from unittest.mock import patch, MagicMock
 except ImportError:
-    from mock import patch
+    from mock import patch, MagicMock
 from acky.aws import AWS
 from acky.api import AwsApiClient
+import acky.s3
+import botocore.session
 
 
 class TestAWS(unittest.TestCase):
@@ -41,6 +43,76 @@ class TestAwsApiClient(unittest.TestCase):
         self._HelpApiClient(AWS('region'))
         get_operation.assert_called()
         call.assert_called()
+
+
+class TestS3(unittest.TestCase):
+    """Mock tests for S3. Ensure botocore calls are correct and happening."""
+
+    class _AWS(object):
+        """AWS object for mock testing with only basic features."""
+        def __init__(self):
+            self.session = botocore.session.get_session()
+            self.region = 'us-east-1'
+
+        @property
+        def s3(self):
+            return acky.s3.S3(self)
+
+    acky.aws.AWS = MagicMock(return_value=_AWS())
+    aws = acky.aws.AWS()
+
+    @patch('acky.s3.S3.call')
+    @patch('botocore.operation.Operation.call')
+    def test_get(self, boto_call, acky_call):
+        self.aws.s3.get("s3://test/")
+        acky_call.assert_called_with("ListObjects",
+                                     response_data_key="Contents",
+                                     Bucket="test", Delimiter="/")
+        boto_call.assert_called()
+        self.aws.s3.get("s3://")
+        acky_call.assert_called_with("ListBuckets",
+                                     response_data_key="Buckets")
+        boto_call.assert_called()
+
+    @patch('acky.s3.S3.call')
+    @patch('botocore.operation.Operation.call')
+    def test_create(self, boto_call, acky_call):
+        self.aws.s3.create("s3://test/")
+        acky_call.assert_called_with("CreateBucket", bucket="test")
+        boto_call.assert_called()
+
+    @patch('acky.s3.S3.call')
+    @patch('botocore.operation.Operation.call')
+    def test_destroy(self, boto_call, acky_call):
+        self.aws.s3.destroy("s3://test/")
+        acky_call.assert_called_with("DeleteBucket", bucket="test")
+        boto_call.assert_called()
+
+    @patch('acky.s3.S3.call')
+    @patch('botocore.operation.Operation.call')
+    def test_download(self, boto_call, acky_call):
+        try:
+            self.aws.s3.download("s3://test/a", "/tmp/test")
+        except TypeError:
+            # We can't actually write files with mocks.
+            pass
+        acky_call.assert_called_with("GetObject", bucket="test", key='a')
+        boto_call.assert_called()
+
+    @patch('acky.s3.S3.call')
+    @patch('botocore.operation.Operation.call')
+    def test_copy(self, boto_call, acky_call):
+        self.aws.s3.copy("s3://test/", "s3://test2/")
+        acky_call.assert_called_with("CopyObject", copy_source="test/",
+                                     key="", bucket="test2")
+        boto_call.assert_called()
+
+    @patch('acky.s3.S3.copy')
+    @patch('acky.s3.S3.destroy')
+    def test_move(self, destroy, copy):
+        self.aws.s3.move("s3://test/a", "s3://test/b")
+        copy.assert_called_with("s3://test/a", "s3://test/b")
+        destroy.assert_called_with("s3://test/a")
 
 
 if __name__ == '__main__':
