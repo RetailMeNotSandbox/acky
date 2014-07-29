@@ -40,7 +40,7 @@ class AWS(object):
             'region': self.region,
             'username': self.username,
             'account': self.account_id,
-            'date': datetime().utcnow().isoformat(),
+            'date': datetime.isoformat(datetime.now()),
         }
 
     @property
