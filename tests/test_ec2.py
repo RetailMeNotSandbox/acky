@@ -2,7 +2,7 @@ import botocore
 import unittest
 import acky
 try:
-    from untitest.mock import patch, call, ANY
+    from unittest.mock import patch, call, ANY
 except ImportError:
     from mock import patch, call, ANY
 
