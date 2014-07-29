@@ -2,6 +2,10 @@
 Acky Library
 %%%%%%%%%%%%
 
+.. image:: https://travis-ci.org/RetailMeNot/acky.svg?branch=master
+   :target: https://travis-ci.org/RetailMeNot/acky
+   :alt: Build Status
+
 The Acky library provides a consistent interface to AWS. Based on botocore, it
 abstracts some of the API work involved and allows the user to interact with AWS
 APIs in a consistent way with minimal overhead.
