@@ -442,6 +442,8 @@ class VolumeCollection(AwsCollection, EC2ApiClient):
         params = {}
         if filters:
             params["filters"] = make_filters(filters)
+        if isinstance(volume_ids, str):
+            volume_ids = [volume_ids]
         return self.call("DescribeVolumes",
                          VolumeIds=volume_ids,
                          response_data_key="Volumes",
