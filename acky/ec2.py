@@ -284,6 +284,37 @@ class InstanceCollection(AwsCollection, EC2ApiClient):
             config = {}
         return _launcher(self._aws, config)
 
+    def status(self, all_instances=None, instance_ids=None, filters=None):
+        """List instance info."""
+        params = {}
+        if filters:
+            params["filters"] = make_filters(filters)
+        if instance_ids:
+            params['InstanceIds'] = instance_ids
+        statuses = self.call("DescribeInstanceStatus",
+                                 response_data_key="InstanceStatuses",
+                                 **params)
+        return statuses
+
+
+    def events(self, all_instances=None, instance_ids=None, filters=None):
+        """a list of touples containing instance Id's and event information"""
+        params = {}
+        if filters:
+            params["filters"] = make_filters(filters)
+        if instance_ids:
+            params['InstanceIds'] = instance_ids
+        statuses = self.call("DescribeInstanceStatus",
+                                 response_data_key="InstanceStatuses",
+                                 **params)
+        event_list=[]
+        for status in statuses:
+            if status.get("Events"):
+                for event in status.get("Events"):
+                    event[u"InstanceId"] = status.get('InstanceId')
+                    event_list.append(event)
+        return event_list
+
 
 class KeyPairCollection(AwsCollection, EC2ApiClient):
     def get(self, filters=None):
