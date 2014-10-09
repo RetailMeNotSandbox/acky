@@ -79,7 +79,9 @@ class AwsApiClient(object):
         if not resp.ok:
             raise AWSCallError(resp, operation)
         if response_data_key:
-            return data[response_data_key]
+            if response_data_key in data:
+                return data[response_data_key]
+            return None
         else:
             return data
 

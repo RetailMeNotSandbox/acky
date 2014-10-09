@@ -69,7 +69,9 @@ class KeysCollection(AwsCollection, IAMApiClient):
             username = self._aws.username
         creds = self.call('CreateAccessKey', user_name=username,
                           response_data_key='AccessKey')
-        return creds['AccessKeyId'], creds['SecretAccessKey']
+        if creds:
+            return creds['AccessKeyId'], creds['SecretAccessKey']
+        return None
 
     def destroy(self, access_key, username=None):
         # returns bool
