@@ -32,11 +32,6 @@ class TestAwsApiClient(unittest.TestCase):
         self._HelpApiClient(AWS('region'))
         _get_service.assert_called()
 
-    @patch('botocore.service.get_endpoint')
-    def test_gets_endpoint(self, _get_endpoint):
-        self._HelpApiClient(AWS('region'))
-        _get_endpoint.assert_called()
-
     @patch('botocore.operation.Operation.call')
     @patch('botocore.service.Service.get_operation')
     def test_call(self, get_operation, call):

@@ -16,7 +16,7 @@ class EC2(EC2ApiClient):
         # returns (string, ...)
         # DescribeRegions
         regions = self.call("DescribeRegions", response_data_key="Regions")
-        if continent and continent != "all":
+        if regions and continent and continent != "all":
             regions = [r for r in regions
                        if r['RegionName'].startswith("{}-".format(continent))]
         return regions
@@ -211,7 +211,9 @@ class InstanceCollection(AwsCollection, EC2ApiClient):
         reservations = self.call("DescribeInstances",
                                  response_data_key="Reservations",
                                  **params)
-        return list(chain(*(r["Instances"] for r in reservations)))
+        if reservations:
+            return list(chain(*(r["Instances"] for r in reservations)))
+        return []
 
     def create(self, ami, count, config=None):
         """Create an instance using the launcher."""
@@ -251,6 +253,7 @@ class InstanceCollection(AwsCollection, EC2ApiClient):
         if (action in ('protect', 'unprotect')):
             for instance in instances:
                 self.call(InstanceId=instance, **actions[action])
+            return "true"
         else:
             return self.call(**actions[action])
 
@@ -343,7 +346,7 @@ class SecurityGroupCollection(AwsCollection, EC2ApiClient):
         groups = self.call("DescribeSecurityGroups",
                            response_data_key="SecurityGroups",
                            **params)
-        if exclude_vpc:
+        if groups and exclude_vpc:
             # Exclude any group that belongs to a VPC
             return [g for g in groups if not g.get('VpcId')]
         else:

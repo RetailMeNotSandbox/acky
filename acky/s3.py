@@ -51,8 +51,9 @@ class S3(AwsApiClient):
 
         objects = self.call("ListObjects", response_data_key="Contents",
                             **params)
-        for obj in objects:
-            obj['url'] = "s3://{0}/{1}".format(bucket, obj['Key'])
+        if objects:
+            for obj in objects:
+                obj['url'] = "s3://{0}/{1}".format(bucket, obj['Key'])
 
         return objects
 
