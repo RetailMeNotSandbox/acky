@@ -291,23 +291,22 @@ class InstanceCollection(AwsCollection, EC2ApiClient):
             params["filters"] = make_filters(filters)
         if instance_ids:
             params['InstanceIds'] = instance_ids
+        if all_instances is not None:
+            params['IncludeAllInstances'] = all_instances
         statuses = self.call("DescribeInstanceStatus",
-                                 response_data_key="InstanceStatuses",
-                                 **params)
+                             response_data_key="InstanceStatuses",
+                             **params)
         return statuses
 
-
     def events(self, all_instances=None, instance_ids=None, filters=None):
-        """a list of touples containing instance Id's and event information"""
+        """a list of tuples containing instance Id's and event information"""
         params = {}
         if filters:
             params["filters"] = make_filters(filters)
         if instance_ids:
             params['InstanceIds'] = instance_ids
-        statuses = self.call("DescribeInstanceStatus",
-                                 response_data_key="InstanceStatuses",
-                                 **params)
-        event_list=[]
+        statuses = self.status(all_instances, **params)
+        event_list = []
         for status in statuses:
             if status.get("Events"):
                 for event in status.get("Events"):
